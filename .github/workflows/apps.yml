@@ -1,0 +1,113 @@
+# Written by `laib-app new` (Werkstatt guide: apps.md). Every app under apps/
+# is tested; on main its image is published to ghcr — only after its tests
+# are green. Every template under templates/ passes `laib template lint`,
+# the same check the box runs before it proposes the service. The published
+# image is signed with cosign (keyless, legacy .sig tag), as laib's own.
+name: apps
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  list:
+    runs-on: ubuntu-24.04
+    outputs:
+      apps: ${{ steps.ls.outputs.apps }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - id: ls
+        run: echo "apps=$(ls -d apps/*/ 2>/dev/null | xargs -rn1 basename | jq -Rnc '[inputs]')" >> "$GITHUB_OUTPUT"
+  test:
+    needs: list
+    if: needs.list.outputs.apps != '[]'
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        app: ${{ fromJSON(needs.list.outputs.apps) }}
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - if: hashFiles(format('apps/{0}/go.mod', matrix.app)) != ''
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: apps/${{ matrix.app }}/go.mod
+      - name: tests
+        run: |
+          if [ -f go.mod ]; then go vet ./... && go test ./...
+          elif [ -f package.json ]; then npm ci && npm test
+          elif [ -f pyproject.toml ] || [ -f requirements.txt ]; then python3 -m venv .venv && . .venv/bin/activate && pip install -q pytest $( [ -f requirements.txt ] && echo -r requirements.txt ) && pytest -q
+          else echo "no tests found for ${{ matrix.app }}: a Werkstatt app ships tests"; exit 1; fi
+  image:
+    needs: [list, test]
+    if: github.event_name == 'push' && needs.list.outputs.apps != '[]'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # cosign signs keyless with this workflow's identity (laib ADR 0034)
+    strategy:
+      matrix:
+        app: ${{ fromJSON(needs.list.outputs.apps) }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: apps/${{ matrix.app }}
+          file: apps/${{ matrix.app }}/Containerfile
+          push: true
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}:latest,ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}:${{ github.sha }}
+      - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+      - name: sign the image in the legacy .sig format; Laib proposes a new digest of ours only with this signature (laib ADR 0034)
+        run: cosign sign --yes --new-bundle-format=false --use-signing-config=false ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}@${{ steps.build.outputs.digest }}
+  templates:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: laib template lint
+        run: |
+          curl -fsSL -o laib https://github.com/mdopp/laib/releases/latest/download/laib-linux-amd64
+          curl -fsSL -o SHA256SUMS https://github.com/mdopp/laib/releases/latest/download/SHA256SUMS
+          grep ' laib-linux-amd64$' SHA256SUMS | sed 's/laib-linux-amd64$/laib/' | sha256sum -c -
+          chmod +x laib
+          for t in templates/*/; do ./laib template lint "$t" || exit 1; done
+  pins:
+    # actions by commit, base images by digest; Dependabot moves them (laib ADR 0034, laib#1165)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - run: bash scripts/pins.sh
+  gates:
+    # one source for the gates: the copies are laib's scaffold's; one cap on the lines (laib#1170);
+    # every scenario of docs/ABLAEUFE.md named by a test, its baseline only shrinking against main
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - run: bash scripts/copies.sh
+      - run: sh scripts/loc.sh
+      - run: python3 -m unittest scripts/test_ablaeufe.py
+      - run: python3 scripts/ablaeufe.py
+  ratchet:
+    # dead code, lint findings, duplicates and complexity only go down; the tools
+    # pinned in the script, today's findings in scripts/ratchet/ (laib#1170)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version: stable
+      - run: python3 -m unittest scripts/test_ratchet.py
+      - run: python3 scripts/ratchet.py

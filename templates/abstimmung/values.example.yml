@@ -1,0 +1,2 @@
+IMAGE: ghcr.io/mdopp/abstimmung:latest
+PROXY_SECRET: !secret ABSTIMMUNG_PROXY_SECRET

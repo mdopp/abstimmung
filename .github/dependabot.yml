@@ -1,0 +1,25 @@
+# The pins of what builds our image move here, by pull request, weekly and
+# grouped: actions by commit, base images by digest (laib ADR 0034, laib#1165).
+# scripts/pins.sh fails CI on a tag or an image without its digest.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories:
+      - "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
+  - package-ecosystem: docker
+    directories:
+      - "/apps/abstimmung"
+    schedule:
+      interval: weekly
+    groups:
+      base-images:
+        patterns: ["*"]
+    commit-message:
+      prefix: build

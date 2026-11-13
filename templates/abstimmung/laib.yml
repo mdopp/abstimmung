@@ -1,0 +1,26 @@
+# A Werkstatt app (laib-app new; guide: /opt/werkstatt/guide/apps.md).
+name: abstimmung
+template: {registry: apps, name: abstimmung, version: 1}
+# what it is for; a second service for one purpose is a HINWEIS
+provides: [abstimmung]
+routes:
+  # abstimmung.<domain>: one Strato CNAME (ADR 0007), the owner creates it.
+  # internal = the home network only; public is the owner's decision.
+  # Authelia does the login (the app has none) for the LLDAP group; Caddy
+  # then sends X-Abstimmung-Proxy, so the app may trust Remote-User.
+  - host: abstimmung
+    port: 18216
+    exposure: public
+    auth: one_factor
+    group: family
+    proxySecret: ABSTIMMUNG_PROXY_SECRET
+secrets:
+  # generated on the box on first apply, never in the repo
+  - name: ABSTIMMUNG_PROXY_SECRET
+# a folder the app writes: - path: ${DATA_DIR}/abstimmung (and a Volume= for exactly that)
+data: []
+health:
+  http: http://127.0.0.1:18216/healthz
+ports:
+  # only Caddy reaches it, never the WLAN
+  - {port: 18216, lan: false}
