@@ -1,2 +1,3 @@
 IMAGE: ghcr.io/mdopp/abstimmung:latest
-PROXY_SECRET: !secret ABSTIMMUNG_PROXY_SECRET
+EINLADUNG: !secret ABSTIMMUNG_EINLADUNG   # the owner's invite word („Schlüssel hinterlegen“ on the box page); the link is https://abstimmung.${DOMAIN}/?e=<word>
+TZ: ${TZ}

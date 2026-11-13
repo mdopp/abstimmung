@@ -1,10 +1,18 @@
 [Unit]
-Description=abstimmung (a Werkstatt app)
+Description=Abstimmung (Mensch und Kanzler, a poll for invited guests)
 
 [Container]
 Image=${IMAGE}
+# loopback only, Caddy in front
 PublishPort=127.0.0.1:18216:8080
-Environment=PROXY_SECRET=${PROXY_SECRET}
+Environment=TZ=${TZ}
+# the invite word (a podman secret, off the argv): only the link with it lets a browser in
+Environment=EINLADUNG=${EINLADUNG}
+Environment=DATA=/data
+Volume=${DATA_DIR}/abstimmung:/data:z
+# distroless nonroot runs as 65532: the data folder is made writable for it
+UserNS=keep-id:uid=65532,gid=65532
+# plain JSON without migrations: the nightly image update may move it
 AutoUpdate=registry
 
 [Service]
