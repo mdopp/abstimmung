@@ -1,24 +1,30 @@
 # A Werkstatt app (laib-app new; guide: /opt/werkstatt/guide/apps.md).
 name: abstimmung
+title: Abstimmung
+beschreibung: Mensch und Kanzler, eine Umfrage vom Bierdeckel
 template: {registry: apps, name: abstimmung, version: 1}
-# what it is for; a second service for one purpose is a HINWEIS
 provides: [abstimmung]
+# A poll for invited guests from outside the household (mdopp/abstimmung):
+# who was a good person, who a good chancellor. No accounts and no Authelia:
+# the guests have no login on the box. The app is its own gate instead: only
+# the invite link https://abstimmung.<domain>/?e=<word> lets a browser in,
+# the word is the owner's key below. It talks to no other service.
 routes:
   # abstimmung.<domain>: one Strato CNAME (ADR 0007), the owner creates it.
-  # internal = the home network only; public is the owner's decision.
-  # Authelia does the login (the app has none) for the LLDAP group; Caddy
-  # then sends X-Abstimmung-Proxy, so the app may trust Remote-User.
+  # public and auth: none are the owner's decision (the Inbox card marks
+  # both): guests open it from anywhere, and the app refuses everybody
+  # without the invite word itself.
   - host: abstimmung
     port: 18216
     exposure: public
-    auth: one_factor
-    group: family
-    proxySecret: ABSTIMMUNG_PROXY_SECRET
+    auth: none
+    loginProbe: /ergebnis            # the result page: 403 without the invite's cookie, as every page but /healthz; laib-app check measures the app's own gate there (#774)
 secrets:
-  # generated on the box on first apply, never in the repo
-  - name: ABSTIMMUNG_PROXY_SECRET
-# a folder the app writes: - path: ${DATA_DIR}/abstimmung (and a Volume= for exactly that)
-data: []
+  - name: ABSTIMMUNG_EINLADUNG       # the invite word: the owner enters it on the box page, never generated (he passes it on in the link); required, without it nobody gets in
+    owner: {label: "Abstimmung: Einladungswort", warum: "Nur wer den Einladungslink mit diesem Wort öffnet, kann abstimmen und das Ergebnis sehen.", hilfe: "Denk dir ein Wort aus Buchstaben und Ziffern aus, ohne Leerzeichen, und trag es hier ein. Der Einladungslink für deine Gäste ist die Adresse der Abstimmung mit /?e= und diesem Wort dahinter, zum Beispiel https://abstimmung.example.de/?e=bierdeckel. Trägst du später ein neues Wort ein, gelten die alten Links nicht mehr."}
+    external: true
+data:
+  - path: ${DATA_DIR}/abstimmung     # stimmen.json: the votes by cookie id, with the name a voter chose to give; plain JSON, backed up
 health:
   http: http://127.0.0.1:18216/healthz
 ports:
