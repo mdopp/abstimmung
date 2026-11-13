@@ -20,9 +20,10 @@ routes:
     auth: none
     loginProbe: /ergebnis            # the result page: 403 without the invite's cookie, as every page but /healthz; laib-app check measures the app's own gate there (#774)
 secrets:
-  - name: ABSTIMMUNG_EINLADUNG       # the invite word: the owner enters it on the box page, never generated (he passes it on in the link); required, without it nobody gets in
+  - name: ABSTIMMUNG_EINLADUNG       # the invite word: the owner enters it on the box page, never generated (he passes it on in the link); optional so the service installs before he has chosen one: without it every page answers 403
     owner: {label: "Abstimmung: Einladungswort", warum: "Nur wer den Einladungslink mit diesem Wort öffnet, kann abstimmen und das Ergebnis sehen.", hilfe: "Denk dir ein Wort aus Buchstaben und Ziffern aus, ohne Leerzeichen, und trag es hier ein. Der Einladungslink für deine Gäste ist die Adresse der Abstimmung mit /?e= und diesem Wort dahinter, zum Beispiel https://abstimmung.example.de/?e=bierdeckel. Trägst du später ein neues Wort ein, gelten die alten Links nicht mehr."}
     external: true
+    optional: true
 data:
   - path: ${DATA_DIR}/abstimmung     # stimmen.json: the votes by cookie id, with the name a voter chose to give; plain JSON, backed up
 health:
