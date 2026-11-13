@@ -17,7 +17,7 @@ jobs:
     outputs:
       apps: ${{ steps.ls.outputs.apps }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: ls
         run: echo "apps=$(ls -d apps/*/ 2>/dev/null | xargs -rn1 basename | jq -Rnc '[inputs]')" >> "$GITHUB_OUTPUT"
   test:
@@ -31,9 +31,9 @@ jobs:
       run:
         working-directory: apps/${{ matrix.app }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - if: hashFiles(format('apps/{0}/go.mod', matrix.app)) != ''
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: apps/${{ matrix.app }}/go.mod
       - name: tests
@@ -54,14 +54,14 @@ jobs:
       matrix:
         app: ${{ fromJSON(needs.list.outputs.apps) }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - id: build
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: apps/${{ matrix.app }}
           file: apps/${{ matrix.app }}/Containerfile
@@ -74,7 +74,7 @@ jobs:
   templates:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: laib template lint
         run: |
           curl -fsSL -o laib https://github.com/mdopp/laib/releases/latest/download/laib-linux-amd64
@@ -86,14 +86,14 @@ jobs:
     # actions by commit, base images by digest; Dependabot moves them (laib ADR 0034, laib#1165)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: bash scripts/pins.sh
   gates:
     # one source for the gates: the copies are laib's scaffold's; one cap on the lines (laib#1170);
     # every scenario of docs/ABLAEUFE.md named by a test, its baseline only shrinking against main
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - run: bash scripts/copies.sh
@@ -105,8 +105,8 @@ jobs:
     # pinned in the script, today's findings in scripts/ratchet/ (laib#1170)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       - run: python3 -m unittest scripts/test_ratchet.py
