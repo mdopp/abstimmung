@@ -21,12 +21,12 @@ const kopfHTML = `<!doctype html>
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 main{max-width:46rem;margin:0 auto;padding:1.25rem .75rem 3rem}
 h1{font-size:1.6rem;line-height:1.2;margin:.5rem 0 .5rem}
-h2{font-size:1rem;margin:1.25rem 0 .4rem}
+h2{font-size:1rem;font-weight:700;margin:1.25rem 0 .4rem}
 p{margin:.5rem 0}
 .leise{color:var(--lei);font-size:.95rem}
 .reihe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem}
 .spalten{position:sticky;top:0;background:var(--bg);padding:.4rem 0;z-index:1}
-.spalten div{font-size:.8rem;font-weight:600;text-align:center;color:var(--lei);hyphens:auto}
+.spalten div{font-size:.9rem;font-weight:700;text-align:center;color:var(--tx);hyphens:auto}
 .feld{background:var(--fl);border:1px solid var(--li);border-radius:.6rem;padding:.35rem;min-height:5.5rem;display:flex;flex-direction:column;gap:.35rem}
 .chips{display:flex;flex-direction:column;gap:.35rem}
 button,select,input,.knopf{font:inherit;min-height:44px;border-radius:.5rem}
