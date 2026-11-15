@@ -23,7 +23,7 @@ import sys
 EXT = {".go", ".html", ".htm", ".tmpl", ".gohtml", ".css", ".js", ".mjs", ".ts",
        ".svg", ".json", ".webmanifest", ".xml"}
 HEX = re.compile(r"(?<![\w&/#-])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])")
-FUNC = re.compile(r"\b(?:rgba?|hsla?)\s*\([^)]*\)", re.I)
+FUNC = re.compile(r"(?<![\w.$])(?:rgba?|hsla?)\s*\([^)]+\)", re.I)
 # A Go or JS comment is prose ("issue #376"), not a colour.
 COMMENT = re.compile(r"(?:^\s*//.*$|\s//\s.*$)")
 ALLOW = "scripts/farben-erlaubt.txt"

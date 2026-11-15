@@ -34,7 +34,8 @@ class Farben(unittest.TestCase):
         d = self.repo({"page.go": "// issue #376, laib#1170\nconst css = `a{color:var(--accent)}` // #fff\nvar link = `<a href=\"#top\">`\n",
                        "page_test.go": "const want = `#f97316`\n",
                        "static/gestaltung.css": ":root{--bg:#070709}\n",
-                       "notes.md": "#fff\n"})
+                       "notes.md": "#fff\n",
+                       "bild.go": "r, g, b, a := c.RGBA()\n"})
         self.assertEqual(farben.check(d), ([], []))
 
     def test_the_allowlist_names_user_content_and_goes_stale(self):
