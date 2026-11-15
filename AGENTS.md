@@ -21,4 +21,8 @@ Outside the Werkstatt, the same guide is `werkstatt/guide/` in github.com/mdopp/
 - `ratchet.py`, `test_ratchet.py`, `ablaeufe.py`, `test_ablaeufe.py`, `pins.sh`, `copies.sh` and `loc.sh` are laib's
   `werkstatt/scaffold/repo/scripts/`: `scripts/copies.sh` fails CI when a copy differs.
   Change them in laib, then copy them here; never edit them only here.
+- The look is mdopp/gestaltung, the household's shared design (its ADR 0001), a Go module pinned
+  at a tag: pages use its components and `var(--…)` tokens, never a colour literal of their own.
+  `scripts/farben.py` fails CI on a hex, `rgb()` or `hsl()` value outside it and outside the named
+  user content in `scripts/farben-erlaubt.txt`; a missing colour becomes a token there first.
 - No secrets in the tree: a template declares them, the box generates or stores them.
