@@ -100,6 +100,9 @@ jobs:
       - run: sh scripts/loc.sh
       - run: python3 -m unittest scripts/test_ablaeufe.py
       - run: python3 scripts/ablaeufe.py
+      # colours only from the shared look, mdopp/gestaltung (its ADR 0001)
+      - run: python3 -m unittest scripts/test_farben.py
+      - run: python3 scripts/farben.py
   ratchet:
     # dead code, lint findings, duplicates and complexity only go down; the tools
     # pinned in the script, today's findings in scripts/ratchet/ (laib#1170)

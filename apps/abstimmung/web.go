@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/mdopp/gestaltung"
 )
 
 const (
@@ -110,5 +112,5 @@ func zeige(w http.ResponseWriter, status int, t *template.Template, data any) {
 func zeile(w http.ResponseWriter, status int, text string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
-	io.WriteString(w, `<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Abstimmung</title><body style="font:1.05rem/1.5 system-ui,sans-serif;margin:3rem auto;max-width:28rem;padding:0 1rem"><p>`+template.HTMLEscapeString(text)+`</p>`)
+	io.WriteString(w, `<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Abstimmung</title><style>`+gestaltung.CSS+`body{margin:0;background:var(--bg)}</style><body><main class="page"><p class="empty">`+template.HTMLEscapeString(text)+`</p></main>`)
 }
